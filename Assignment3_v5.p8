@@ -486,23 +486,25 @@ function player_hook_update()
 
                 if btn(❎) then
                     if dist > 2 then
-                        -- normalize and move player toward hook
+                        -- normalize
                         local nx = dx / dist
                         local ny = dy / dist
 
-                        -- clamp to max rope length
-                        if dist > hook_length then
-                            px = player.hook_x - nx * hook_length
-                            py = player.hook_y - ny * hook_length
-                        else
-                            -- pull player closer
-                            px += nx * hook_p
-                            py += ny * hook_p
+                        -- step size = hook_p
+                        local step_x = nx * hook_p
+                        local step_y = ny * hook_p
+
+                        -- try horizontal move first
+                        player.x += step_x
+                        if map_collision(player, "left", 0) or map_collision(player, "right", 0) then
+                            player.x -= step_x  -- undo if blocked
                         end
 
-                        -- update player position
-                        player.x = px - player.w/2
-                        player.y = py - player.h/2
+                        -- then vertical move
+                        player.y += step_y
+                        if map_collision(player, "up", 0) or map_collision(player, "down", 0) then
+                            player.y -= step_y  -- undo if blocked
+                        end
 
                         player.dx = 0
                         player.dy = 0
@@ -523,6 +525,8 @@ function player_hook_update()
                     player.state = states.idle
                 end
             end
+
+
 
 
 
